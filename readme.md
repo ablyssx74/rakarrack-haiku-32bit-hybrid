@@ -1,4 +1,4 @@
-### Rakarrack Haiku is a port in progress of the great [rakarrack project](https://rakarrack.sourceforge.net/)
+### Rakarrack Haiku 32bit hybrid is a port in progress of the great [rakarrack project](https://rakarrack.sourceforge.net/)
 
 
 To configure run ```make -f haiku.makefile config ```
@@ -9,6 +9,10 @@ If build goes all okay you will have ./rakarrack in the root directory
 
 To clean the build run ``` make -f haiku.makefile clean``` 
 
+Known Bugs:
+My test env was on virtualbox with the latest Haiku 32bit hybrid
+FLTK caused a segfault with my test build.  
+Using ```rakarrack --no-gui``` ran with no segfault but I could not hear the audio playback. 
 
 
 Notes: <br>
