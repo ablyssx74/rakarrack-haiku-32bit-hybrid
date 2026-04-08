@@ -1,5 +1,7 @@
 ### Rakarrack Haiku 32bit hybrid is a port in progress of the great [rakarrack project](https://rakarrack.sourceforge.net/)
 
+Requires: fltk_x86_devel libsample_x86_devel libsndfile_x86_devel libxfont_x86_devel libxfont2_x86_devel libxpm_x86_devel
+
 
 To configure run ```make -f haiku.makefile config ```
 
