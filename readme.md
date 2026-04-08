@@ -13,11 +13,13 @@ To clean the build run ``` make -f haiku.makefile clean```
 Known Bugs:
 
 My test env was on virtualbox with the latest Haiku 32bit hybrid
+
 FLTK caused a segfault with my test build.  
+
 Using ```rakarrack --no-gui``` ran with no segfault but I could not hear the audio playback. 
 
 
-Notes: <br>
+Notes: 
 
 Update Input/Output frequency in Haiku Media Preferences to match 48kHz if engine is built to use 48kHz<br><br>
 
