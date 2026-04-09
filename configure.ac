@@ -87,7 +87,7 @@ case "$host_os" in
 	*haiku*)
 		if test -d "/boot/system/develop/lib/x86"; then
 		LDFLAGS="$LDFLAGS -L/boot/system/develop/lib/x86 -L/boot/system/lib/x86"
-		CPPFLAGS="$CPPFLAGS -I/boot/system/develop/haders/x86"
+		CPPFLAGS="$CPPFLAGS -I/boot/system/develop/headers/x86"
 		fi
 		;;
 esac
