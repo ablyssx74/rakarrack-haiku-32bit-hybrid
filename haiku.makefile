@@ -65,7 +65,7 @@ build: haiku_stubs.o
 	@echo " SIMD Level: $(shell echo $(SIMD_FLAGS) | grep -o 'march=[^ ]*')"
 	@echo "=========================================================="
 	touch configure.in aclocal.m4 Makefile.am Makefile.in configure config.status
-	$(MAKE) -j$(nproc) \
+	$(MAKE) -j4 \
 		CXXFLAGS="-include $(PWD)/jack/jack.h $(HAIKU_FIXES) -I/boot/system/develop/headers/x86 -I/boot/system/develop/tools/x86/lib/gcc/i586-pc-haiku/13.3.0/include $(FLTK_CXX) $(BUILD_FLAGS) -fpermissive -fno-stack-protector -I. -I$(PWD)/jack" \
 		LIBS="$(FLTK_LD) $(EXTRA_LIBS) $(HAIKU_LIBS) $(LD_OPTIMIZE) $(PWD)/haiku_stubs.o"
 	$(CXX) -o rakarrack src/*.o haiku_stubs.o \
