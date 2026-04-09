@@ -56,7 +56,11 @@ config:
 	ac_cv_lib_Xext_main=yes \
 	ac_cv_lib_Xrender_main=yes \
 	ac_cv_lib_X11_main=yes \
-	./configure --enable-datadir --datadir="/boot/system/data/rakarrack/data" --enable-docdir --docdir="/boot/system/rakarrack/doc/help" --with-frame-rate=$(RATE) --with-buffer-frames="$(FRAMES)"
+	 ./configure \
+	--enable-datadir --datadir="/boot/system/data/rakarrack/share/rakarrack" \
+	--enable-docdir --docdir="/boot/system/data/rakarrack/share/doc/rakarrack/html" \
+	--with-frame-rate=$(RATE) \
+	--with-buffer-frames="$(FRAMES)"
 	
 
 build: haiku_stubs.o
