@@ -83,7 +83,6 @@ clean:
 	@echo "Performing deep clean (distclean)..."
 	# Remove the binaries and stubs
 	rm -f rakarrack haiku_stubs.o
-	#rm -f aclocal.m4 configure
 	# Call the internal Makefile's distclean if it exists
 	-[ -f Makefile ] && $(MAKE) distclean
 	# Clean up leftover Autotools files and caches
