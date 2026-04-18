@@ -1,24 +1,27 @@
 /*
-  rakarrack - a guitar effects software
+  rakarrack - a guitar efects software
 
- process.C  -  mainloop functions
+  jack.C  -   jack I/O
   Copyright (C) 2008-2010 Josep Andreu
   Author: Josep Andreu
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of version 2 of the GNU General Public License
- as published by the Free Software Foundation.
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of version 2 of the GNU General Public License
+  as published by the Free Software Foundation.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License (version 2) for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License (version 2) for more details.
 
- You should have received a copy of the GNU General Public License
- (version2)  along with this program; if not, write to the Free Software
- Foundation,
- Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-
+  You should have received a copy of the GNU General Public License
+(version2)
+  along with this program; if not, write to the Free Software Foundation,
+  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  
+  
+  Updated by Kris Beazley aka ablyss for Haiku OS with the help of AI
+  Copyright 2026
 */
 
 #include <stdio.h>
@@ -30,6 +33,9 @@
 #include <unistd.h>
 #include <FL/Fl_Preferences.H>
 #include "global.h"
+#include <MidiProducer.h>
+#include <MidiConsumer.h>
+
 
 #define MAX_RKR_PERIOD 8192
 
@@ -65,7 +71,9 @@ XWMHints *hints;
 
 RKR::RKR ()
 {
-
+  fMidiOutPort = NULL;
+  fMidiProd = NULL;
+  fMidiInPort = NULL;
   char temp[128];
   ML_filter=0;
   error_num = 0;
@@ -92,9 +100,8 @@ RKR::RKR ()
   actuvol= 0;
   OnCounter=0;
   sprintf (temp, "rakarrack");
-  jackclient = jack_client_open (temp, options, &status, NULL);
-
-  if (jackclient == NULL)
+  //jackclient = jack_client_open (temp, options, &status, NULL);
+  jackclient = (void**)jack_client_open (temp, options, &status, NULL);  if (jackclient == NULL)
     {
       fprintf (stderr, "Cannot make a jack client, is jackd running?\n");
       nojack = 1;
@@ -808,7 +815,17 @@ memset(m_ticks, 0, sizeof(float) * MAX_RKR_PERIOD);
 
 RKR::~RKR ()
 {
+    if (fMidiProd) {
+        fMidiProd->Release();
+        fMidiProd = NULL;
+    }
+    if (fMidiInPort) {
+        fMidiInPort->Unregister();
+        fMidiInPort->Release();
+        fMidiInPort = NULL;
+    }
 };
+;
 
 
 

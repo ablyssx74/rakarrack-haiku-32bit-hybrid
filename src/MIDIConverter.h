@@ -1,12 +1,27 @@
-/* tuneit.c -- Detect fundamental frequency of a sound
-* Copyright (C) 2004, 2005  Mario Lang <mlang@delysid.org>
-*
-* Modified for rakarrack by Josep Andreu
-* MIDIConverter.h  MIDIConverter definitions
-*
-* This is free software, placed under the terms of the
-* GNU General Public License, as published by the Free Software Foundation.
-* Please see the file COPYING for details.
+/*
+  rakarrack - a guitar efects software
+
+  jack.C  -   jack I/O
+  Copyright (C) 2008-2010 Josep Andreu
+  Author: Josep Andreu
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of version 2 of the GNU General Public License
+  as published by the Free Software Foundation.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License (version 2) for more details.
+
+  You should have received a copy of the GNU General Public License
+(version2)
+  along with this program; if not, write to the Free Software Foundation,
+  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  
+  
+  Updated by Kris Beazley aka ablyss for Haiku OS with the help of AI
+  Copyright 2026
 */
 
 #include "jack.h"
@@ -18,6 +33,8 @@
 #include <stdlib.h>
 #include <jack/midiport.h>
 #include <alsa/asoundlib.h>
+#include <midi2/Midi2Defs.h>
+#include <midi2/MidiProducer.h>
 
 
 struct Midi_Event
@@ -35,7 +52,7 @@ public:
   MIDIConverter ();
   ~MIDIConverter ();
 
-
+  void ResetBuffers(); 
   float *efxoutl;
   float *efxoutr;
   signed short int *schmittBuffer;
@@ -68,14 +85,21 @@ public:
   snd_seq_t *port;
 
 
-private:
+  BMidiLocalProducer* fHaikuMidiOut; 
+  void MIDI_Send_Note_On (int nota);  
+  void MIDI_Send_Note_Off (int nota); 
+  int p_off_count_max;   // To replace the fixed '5'
+  int p_stable_threshold; // To replace the fixed '2'
+  float p_trigfact;       // To replace the fixed '0.5f'
 
+private:
+  int stable_count;  
+  int off_count;
   void displayFrequency (float freq);
   void schmittInit (int size);
   void schmittS16LE (int nframes, signed short int *indata);
   void schmittFree ();
-  void MIDI_Send_Note_On (int note);
-  void MIDI_Send_Note_Off (int note);
+
 
   int blockSize;
 

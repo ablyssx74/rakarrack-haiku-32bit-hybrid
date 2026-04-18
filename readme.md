@@ -1,6 +1,8 @@
-### Rakarrack Haiku 32bit hybrid is a port in progress of the great [rakarrack project](https://rakarrack.sourceforge.net/)
+### Rakarrack Haiku is a port in progress of the great [rakarrack project](https://rakarrack.sourceforge.net/)
 
-Requires: fltk_x86_devel libsample_x86_devel libsndfile_x86_devel libxfont_x86_devel libxfont2_x86_devel libxpm_x86_devel
+Requires: Haiku 64bit fltk_devel fontconfig_devel freetype_devel libxfont2_devel libsndfile_devel libsamplerate_devel libxpm_devel
+
+To see help run ```make -f haiku.makefile help```
 
 To configure run ```make -f haiku.makefile config ```
 
@@ -10,17 +12,10 @@ If build goes all okay you will have ./rakarrack in the root directory
 
 To clean the build run ``` make -f haiku.makefile clean``` 
 
-Known Bugs:
-
-My test env was on virtualbox with the latest Haiku 32bit hybrid
-
-FLTK caused a segfault with my test build.  
-
-Using ```rakarrack --no-gui``` ran with no segfault but I could not hear the audio playback. 
-
-
-Notes: 
-
-Update Input/Output frequency in Haiku Media Preferences to match 48kHz if engine is built to use 48kHz<br><br>
-
-
+<br>
+GTK Theme<br>
+<img width="400" height="460" alt="screenshot" src="https://github.com/user-attachments/assets/1c5eb8c9-33a9-4d51-bb37-7387207e271f" /><br>
+Plastic Theme<br>
+<img width="400" height="460" alt="Image" src="https://github.com/user-attachments/assets/04c3984a-30de-4aba-96fb-82ead7a4def3" /><br>
+Preferences Menu<br>
+<img width="400" height="460" alt="Image" src="https://github.com/user-attachments/assets/f3ba92ce-0ade-4020-8840-ff964cc9cc47" />

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <SupportDefs.h>
 #include <OS.h>
+#include <FL/Fl_Preferences.H>
 
 // Planar buffers for Rakarrack to write into
 float input_buffer_L[8192];
@@ -40,7 +41,42 @@ extern "C" {
    		 // Also return the name as the "handle"
    		 return (jack_port_t*)strdup(name);
 		}
+		
 
+
+    uint32_t jack_get_sample_rate(jack_client_t) { 
+        static uint32_t cached_rate = 0;
+        if (cached_rate == 0) {
+            char val[32];
+            // Convert the macro to a string for the fallback argument
+            char fallback[32];
+            snprintf(fallback, sizeof(fallback), "%d", DEFAULT_FRAME_RATE);
+
+            Fl_Preferences prefs(Fl_Preferences::USER, "rakarrack.sf.net", "rakarrack");
+            prefs.get("Haiku_SampleRate", val, fallback, 32);
+            cached_rate = (uint32_t)atoi(val);
+        }
+        return cached_rate; 
+    }
+
+    jack_nframes_t jack_get_buffer_size(jack_client_t) { 
+        static uint32_t cached_frames = 0;
+        if (cached_frames == 0) {
+            char val[32];
+            // Convert the macro to a string for the fallback argument
+            char fallback[32];
+            snprintf(fallback, sizeof(fallback), "%d", DEFAULT_BUFFER_FRAMES);
+
+            Fl_Preferences prefs(Fl_Preferences::USER, "rakarrack.sf.net", "rakarrack");
+            prefs.get("Haiku_BufferSize", val, fallback, 32);
+            cached_frames = (jack_nframes_t)atoi(val);
+        }
+        return cached_frames; 
+    }
+		
+		
+		
+/*
 	 uint32_t jack_get_sample_rate(jack_client_t) { 
     	return (uint32_t)DEFAULT_FRAME_RATE; 
 		}
@@ -48,7 +84,7 @@ extern "C" {
 	 jack_nframes_t jack_get_buffer_size(jack_client_t) { 
     	return (jack_nframes_t)DEFAULT_BUFFER_FRAMES; 
 		}
-
+*/
 	void* jack_port_get_buffer(jack_port_t port, jack_nframes_t nframes) {
     const char* name = jack_port_name(port);
     // Use the dummy buffers if the engine isn't fully alive yet
@@ -123,7 +159,6 @@ extern "C" {
     void snd_seq_ev_set_subs(snd_seq_event_t* ev) {}
     void snd_seq_ev_set_direct(snd_seq_event_t* ev) {}
 }
-
 // --- Helper Functions ---
 char *strsep(char **stringp, const char *delim) {
     char *s; const char *spanp; int c, sc; char *tok;

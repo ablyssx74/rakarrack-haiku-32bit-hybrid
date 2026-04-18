@@ -18,10 +18,13 @@
 (version2)
   along with this program; if not, write to the Free Software Foundation,
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-
+  
+  
+  Updated by Kris Beazley aka ablyss for Haiku OS with the help of AI
+  Copyright 2026
 */
 
-//#pragma GCC target("sse,sse2")
+
 
 #include <app/Looper.h>
 #include <media/BufferProducer.h>
@@ -45,6 +48,9 @@ bool gDebugMode = false;
   #undef CurrentTime
 #endif
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 // Media Kit & System
 #include <media/SoundPlayer.h>
 #include <media/MediaRoster.h>
@@ -65,7 +71,8 @@ bool gDebugMode = false;
 #include <media/MediaNode.h>
 
 #include <media/BufferGroup.h>
-//#include <new>
+#include <MidiProducer.h>
+#include <MidiConsumer.h>
 #include <xmmintrin.h>
 
 // Forward Declarations
@@ -88,7 +95,13 @@ static BSoundPlayer *outPlayer = NULL;
 //static BSoundPlayer *inPlayer = NULL;
 extern pthread_mutex_t jmutex;
 extern RKR *JackOUT;
-extern float* current_haiku_buffer;
+extern "C" RKR *rk;
+
+
+
+
+
+//extern float* current_haiku_buffer;
 
 // Persistent handles for shutdown
 media_node   gInputNode;
@@ -379,14 +392,14 @@ public:
     size_t sampleSize = (type == 0x24) ? sizeof(float) : sizeof(int16);
     size_t frames = size / (2 * sampleSize); // <--- This defines 'frames'
     
-        static int out_log = 0;
+        /* Uncomment if needed  // Needs update - Reading from empty frames.
         if (gDebugMode) {
         static int out_log = 0;
         if (out_log++ % 50 == 0) {
         printf("[Debug-Output] Reading from Engine... Available Frames: %d\n", rbOutputLeft->Available());
     		}
         }
-        
+        */
         if (gDebugMode) {
    		 uint32_t realFrames = size / (format.channel_count * sampleSize);
         static int size_check_count = 0;
@@ -429,12 +442,14 @@ public:
 	float probeSample = 0.0f;
 	if (type == 0x24) probeSample = ((float*)buffer)[0];
 	else probeSample = ((int16*)buffer)[0] / 32767.0f;
+		/*  Uncomment if needed
 	 	if (gDebugMode) {
 			static int out_log_count = 0;
 				if (out_log_count++ % 50 == 0) {
     				printf("[Debug-Out-Check] Sending to Speaker: %.6f\n", probeSample);
 					}
  				}
+ 				*/
     pthread_mutex_unlock(&jmutex);
 }
 
@@ -452,7 +467,7 @@ jack_client_t *jackclient;
 jack_port_t *outport_left, *outport_right;
 jack_port_t *inputport_left, *inputport_right, *inputport_aux;
 jack_port_t *jack_midi_in, *jack_midi_out;
-void *dataout;
+//void *dataout; // delete ?
 
 int jackprocess (jack_nframes_t nframes, void *arg);
 
@@ -461,9 +476,20 @@ extern "C" bigtime_t estimate_max_scheduling_latency();
 int JACKstart(RKR * rkr_, jack_client_t * jackclient_) {
     JackOUT = rkr_;
     pthread_mutex_init(&jmutex, NULL);
+ 
+     // --- LOAD SAVED HAIKU SETTINGS ---
+    char saved_rate[32], saved_frames[32];
+    Fl_Preferences rkr_prefs(Fl_Preferences::USER, "rakarrack.sf.net", "rakarrack");
     
-	// 1. Initialize Ring Buffers (Size = 2 seconds of audio)
-	uint32_t bufferSize = (uint32_t)DEFAULT_FRAME_RATE * 2;
+    // Default to your haiku.make values if nothing is saved yet
+	rkr_prefs.get("Haiku_SampleRate", saved_rate, STR(DEFAULT_FRAME_RATE), 32);
+	rkr_prefs.get("Haiku_BufferSize", saved_frames, STR(DEFAULT_BUFFER_FRAMES), 32);
+
+    int final_rate = atoi(saved_rate);
+    int final_frames = atoi(saved_frames);
+    
+    // 1. Initialize Ring Buffers using the loaded rate
+    uint32_t bufferSize = (uint32_t)final_rate * 2;
 
 	if (!rbInputLeft)   rbInputLeft   = new SimpleRingBuffer(bufferSize);
 	if (!rbInputRight)  rbInputRight  = new SimpleRingBuffer(bufferSize);
@@ -476,9 +502,15 @@ int JACKstart(RKR * rkr_, jack_client_t * jackclient_) {
     memset(&format, 0, sizeof(format)); 
     format.format = media_raw_audio_format::B_AUDIO_FLOAT;
     format.channel_count = 2; 
-    format.frame_rate = DEFAULT_FRAME_RATE; 
+    format.frame_rate = (float)final_rate; 
     format.byte_order = B_MEDIA_HOST_ENDIAN;
-    format.buffer_size = DEFAULT_BUFFER_FRAMES * sizeof(float) * 2; 	
+    format.buffer_size = final_frames * sizeof(float) * 2; 		
+    
+    // Latency sniffer
+  
+	float latency_ms = ((float)final_frames / (float)final_rate) * 1000.0f;
+	
+
 
     // 3. Register Input Node
     BMediaRoster* roster = BMediaRoster::Roster();
@@ -587,7 +619,15 @@ int jackprocess (jack_nframes_t nframes, void *arg)
 
     // 5. CALCULATE LOAD
     // Available time for this block in microseconds
-    double max_us = ((double)nframes / DEFAULT_FRAME_RATE) * 1000000.0;
+    uint32_t current_rate = jack_get_sample_rate(NULL);
+    
+    // Safety fallback in case the function returns 0 (prevents divide-by-zero crash)
+    if (current_rate == 0) {
+        current_rate = DEFAULT_FRAME_RATE;
+    }
+
+    double max_us = ((double)nframes / (double)current_rate) * 1000000.0;
+   
     float instant_load = ((float)(end_time - start_time) / max_us) * 100.0f;
 
     // Smooth the result so the UI doesn't flicker (90% old, 10% new)
@@ -758,6 +798,15 @@ extern "C" void HaikuAudioShutdown() {
             }
         }
     }
+    
+    printf("Rakarrack: Cleaning up MIDI resources...\n");
+
+
+// 1. MIDI DISCONNECT
+    if (rk) {
+        rk->MidiShutdown();
+    }
+
 
     // 2. STOP AND RELEASE
     if (outPlayer) {
@@ -766,7 +815,7 @@ extern "C" void HaikuAudioShutdown() {
         delete outPlayer;
         outPlayer = NULL;
     }
-
+	
     if (inNode) {
         printf("Rakarrack: Stopping and Releasing inNode...\n");
         roster->StopNode(inNode->Node(), 0, true);
@@ -776,13 +825,4 @@ extern "C" void HaikuAudioShutdown() {
     
     printf("Rakarrack: Shutdown complete.\n");
 }
-
-
-
-
-
-
-
-
-
 
