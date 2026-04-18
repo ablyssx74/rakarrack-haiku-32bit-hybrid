@@ -1,6 +1,6 @@
 ### Rakarrack Haiku is a port in progress of the great [rakarrack project](https://rakarrack.sourceforge.net/)
 
-Requires: Haiku 32bit 
+Requires: Haiku 64bit or 32bit 
 
 To see help run ```make -f haiku.makefile help```
 
@@ -8,7 +8,7 @@ To configure run ```make -f haiku.makefile config ```
 
 To build run ``` make -f haiku.makefile ``` 
 
-If build goes all okay you will have ./rakarrack in the root directory 
+To package run ```make -f haiku.makefile package ```
 
 To clean the build run ``` make -f haiku.makefile clean``` 
 

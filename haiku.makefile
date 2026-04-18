@@ -10,13 +10,16 @@ CXX = g++-x86
 CC = gcc-x86
 LDFLAGS = -L/boot/system/develop/lib/x86 -L/boot/system/lib/x86 
 CPPFLAGS = -I/boot/system/develop/headers/x86 -I$(PWD)
-
-MAKE := setarch x86 $(MAKE)   
+PackageInfo = PackageInfo32.tpl
+MAKE := setarch x86 $(MAKE)
+REQUIRED_PKGS =	fltk_x86 freetype_x86 libxfont2_x86 libsndfile_x86 libsamplerate_x86 libxpm_x86 
 else ifeq ($(UNAME_M), x86_64)
 CXX = g++
 CC = gcc
 LDFLAGS = -L/boot/system/develop/lib/ 
 CPPFLAGS = -I$(PWD)
+PackageInfo = PackageInfo64.tpl
+REQUIRED_PKGS = fltk_devel fontconfig_devel freetype_devel libxfont2_devel libsndfile_devel libsamplerate_devel libxpm_devel
 endif
 
 #LDFLAGS="-L/boot/system/develop/lib/x86 -L/boot/system/lib/x86" \
@@ -151,7 +154,7 @@ package: all
 	@[ -n "$(PACKAGE_DIR)" ] || { echo "PACKAGE_DIR is undefined"; exit 1; }
 	rm -rf "./$(PACKAGE_DIR)"
 	mkdir -p $(PACKAGE_DIR)
-	sed -e 's/$$(NAME)/$(NAME)/g' -e 's/$$(VERSION)/$(VERSION)/g' -e 's/$$(ARCH)/$(ARCH)/' -e 's/$$(YEAR)/$(shell date +%Y)/' PackageInfo.tpl > $(PACKAGE_DIR)/.PackageInfo
+	sed -e 's/$$(NAME)/$(NAME)/g' -e 's/$$(VERSION)/$(VERSION)/g' -e 's/$$(ARCH)/$(ARCH)/' -e 's/$$(YEAR)/$(shell date +%Y)/' $(PackageInfo) > $(PACKAGE_DIR)/.PackageInfo
 	mkdir -p $(PACKAGE_DIR)/apps
 	mkdir -p $(PACKAGE_DIR)/bin
 	mkdir -p $(PACKAGE_DIR)/data/deskbar/menu/Applications
@@ -179,10 +182,10 @@ package: all
 #----------------------------------------------------------
 # Required packages- Informational purposes 
 #----------------------------------------------------------
-REQUIRED_PKGS = fltk_devel fontconfig_devel freetype_devel libxfont2_devel libsndfile_devel libsamplerate_devel libxpm_devel
+
          
 deps:
-	@echo "Install these via pkgman:"
+	@echo "Install these via pkgman to build source:"
 	@echo "pkgman install $(REQUIRED_PKGS)"     	
 
 #----------------------------------------------------------	
