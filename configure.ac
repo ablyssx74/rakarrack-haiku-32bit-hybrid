@@ -84,13 +84,25 @@ AC_CHECK_FUNCS([floor memset memmove pow select sqrt strdup strstr])
 
 AC_CHECK_LIB([network], [main])
 case "$host_os" in
-	*haiku*)
-		if test -d "/boot/system/develop/lib/x86"; then
-		LDFLAGS="$LDFLAGS -L/boot/system/develop/lib/x86 -L/boot/system/lib/x86"
-		CPPFLAGS="$CPPFLAGS -I/boot/system/develop/headers/x86 -I/boot/system/develop/headers/x86/X11"
-		fi
-		;;
+    *haiku*)
+        case "$host_cpu" in
+            x86_64)
+                if test -d "/boot/system/develop/lib"; then
+                    LDFLAGS="$LDFLAGS -L/boot/system/develop/lib -L/boot/system/lib"
+                    CPPFLAGS="$CPPFLAGS -I/boot/system/develop/headers -I/boot/system/develop/headers/X11"
+                fi
+                ;;
+            i?86)
+                # 32-bit (x86) logic
+                if test -d "/boot/system/develop/lib/x86"; then
+                    LDFLAGS="$LDFLAGS -L/boot/system/develop/lib/x86 -L/boot/system/lib/x86"
+                    CPPFLAGS="$CPPFLAGS -I/boot/system/develop/headers/x86 -I/boot/system/develop/headers/x86/X11"
+                fi
+                ;;
+        esac
+        ;;
 esac
+
 
 
 

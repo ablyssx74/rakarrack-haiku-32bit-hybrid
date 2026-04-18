@@ -2,9 +2,27 @@
 # Optimized Haiku Build Script
 SHELL := /bin/bash
 #----------------------------------------------------------
+      
+
+UNAME_M := $(shell uname -p)
+ifeq ($(UNAME_M), x86)
 CXX = g++-x86
 CC = gcc-x86
-MAKE := setarch x86 $(MAKE)               
+LDFLAGS = -L/boot/system/develop/lib/x86 -L/boot/system/lib/x86 
+CPPFLAGS = -I/boot/system/develop/headers/x86 -I$(PWD)
+
+MAKE := setarch x86 $(MAKE)   
+else ifeq ($(UNAME_M), x86_64)
+CXX = g++
+CC = gcc
+LDFLAGS = -L/boot/system/develop/lib/ 
+CPPFLAGS = -I$(PWD)
+endif
+
+#LDFLAGS="-L/boot/system/develop/lib/x86 -L/boot/system/lib/x86" \
+#CPPFLAGS="-I/boot/system/develop/headers/x86 -I$(PWD)" \
+
+      
 
 #----------------------------------------------------------
 # Default values if not specified on the command line
@@ -54,8 +72,9 @@ all: build
 # Configure with overrides
 #----------------------------------------------------------
 config:
-	LDFLAGS="-L/boot/system/develop/lib/x86 -L/boot/system/lib/x86" \
-	CPPFLAGS="-I/boot/system/develop/headers/x86 -I$(PWD)" \
+	./configure \
+	LDFLAGS="$(LDFLAGS)" \
+	CPPFLAGS="$(CPPFLAGS)" \
 	ACONNECT=/bin/true \
 	ac_cv_header_alsa_asoundlib_h=yes \
 	ac_cv_lib_asound_main=yes \
@@ -75,7 +94,6 @@ config:
 	ac_cv_lib_Xext_main=yes \
 	ac_cv_lib_Xrender_main=yes \
 	ac_cv_lib_X11_main=yes \
-	./configure \
 	--enable-datadir --datadir="/boot/system/data/rakarrack/share/rakarrack" \
 	--enable-docdir --docdir="/boot/system/data/rakarrack/share/doc/rakarrack/html" \
 	--with-frame-rate=$(RATE) \
